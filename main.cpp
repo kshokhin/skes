@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "eventdispatcher.h"
+#include "EventDispatcher.h"
 #include "foo.h"
 
 int main()

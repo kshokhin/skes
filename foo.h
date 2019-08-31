@@ -1,7 +1,7 @@
 #ifndef FOO_H
 #define FOO_H
 
-#include "eventdispatcher.h"
+#include "EventDispatcher.h"
 #include "types.h"
 
 
