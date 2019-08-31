@@ -14,7 +14,7 @@ struct NewPlayer
 class Foo : public EventProcessor
 {
 public:
-    explicit Foo(EventDispatcher& dispatcher)
+    explicit Foo(event_dispatcher_t& dispatcher)
     {
         dispatcher.subscribeEvent<NewPlayer>(*this,
             [this](const NewPlayer& np_info)

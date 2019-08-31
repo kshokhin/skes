@@ -1,17 +1,11 @@
 #ifndef EVENT_DISPATCHER_H
 #define EVENT_DISPATCHER_H
 
-#include <functional>
-#include <unordered_map>
-#include <vector>
-#include <optional>
-
-#include "types.h"
 #include "EventProcessor.h"
 #include "EventTraits.h"
-#include "LocalEventSubscribersPolicy.h"
 
-class EventDispatcher
+template<typename TEventSubscriptionPolicy>
+class EventDispatcher : private TEventSubscriptionPolicy
 {
 public:
     template<typename TEvent>
@@ -46,11 +40,12 @@ private:
     }
 private:
     size_t m_next_event_id = 0;
-    std::unordered_map<size_t, EventSubscribers> m_subscribers;
 };
 
+template<typename TEventSubscriptionPolicy>
 template<typename TEvent>
-void EventDispatcher::postEvent(EventProcessor* publisher, const TEvent& event)
+void EventDispatcher<TEventSubscriptionPolicy>::postEvent(
+    EventProcessor* publisher, const TEvent& event)
 {
     if (publisher != nullptr)
     {
@@ -61,29 +56,33 @@ void EventDispatcher::postEvent(EventProcessor* publisher, const TEvent& event)
     std::cout << (publisher == nullptr ? "null" : std::to_string(publisher->id()));
     std::cout << " post event " << eventID<TEvent>() << "\n";
 
-    auto subscribers_it = m_subscribers.find(eventID<TEvent>());
-    if (subscribers_it == std::end(m_subscribers)) return;
-    subscribers_it->second.template post<TEvent>(publisher, event);
+    TEventSubscriptionPolicy::template postEvent<TEvent>(
+        eventID<TEvent>(), publisher, event);
 }
 
+template<typename TEventSubscriptionPolicy>
 template<typename TEvent>
-void EventDispatcher::subscribeEvent(EventProcessor& subscriber,
+void EventDispatcher<TEventSubscriptionPolicy>::subscribeEvent(
+    EventProcessor& subscriber,
     const typename Traits::event_handler_t<TEvent>& handler)
 {
     checkSubscriberID(subscriber);
     std::cout << "subscribeEvent() | subscriber " << subscriber.id();
     std::cout << " subscribed to event " << eventID<TEvent>() << "\n";
-    m_subscribers[eventID<TEvent>()].template subscribe<TEvent>(subscriber, handler);
+    TEventSubscriptionPolicy::template subscribeEvent<TEvent>(
+        eventID<TEvent>(), subscriber, handler);
 }
 
+template<typename TEventSubscriptionPolicy>
 template<typename TEvent>
-void EventDispatcher::unsubscribeEvent(EventProcessor& subscriber)
+void EventDispatcher<TEventSubscriptionPolicy>::unsubscribeEvent(
+    EventProcessor& subscriber)
 {
     std::cout << "unsubscribeEvent() | subscriber " << subscriber.id();
     std::cout << " unsubscribed event " << eventID<TEvent>() << "\n";
-    auto subscribers_it = m_subscribers.find(eventID<TEvent>());
-    if (subscribers_it == std::end(m_subscribers)) return;
 
-    subscribers_it->second.unsubscribe(subscriber);
+    TEventSubscriptionPolicy::template unsubscribeEvent<TEvent>(
+            eventID<TEvent>(), subscriber);
+    
 }
 #endif
