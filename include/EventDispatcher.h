@@ -1,6 +1,8 @@
 #ifndef EVENT_DISPATCHER_H
 #define EVENT_DISPATCHER_H
 
+#include <atomic>
+
 #include "EventProcessor.h"
 #include "EventTraits.h"
 
