@@ -18,6 +18,11 @@ public:
         const typename Traits::event_handler_t<TEvent>& handler);
 
     template<typename TEvent>
+    void subscribeEvent(EventProcessor& subscriber,
+        const typename Traits::event_handler_t<TEvent>& handler,
+        const typename Traits::event_filter_t<TEvent>& filter);
+
+    template<typename TEvent>
     void unsubscribeEvent(EventProcessor& subscriber);
 private:
     template<typename TEvent>
@@ -36,12 +41,12 @@ private:
     }
 
     static size_t newSubscriberID() {
-        static std::atomic<size_t> next_subscriber_id = 0;
+        static std::atomic<size_t> next_subscriber_id = 1;
 
         return next_subscriber_id++;
     }
 private:
-    size_t m_next_event_id = 0;
+    size_t m_next_event_id = 1;
 };
 
 template<typename TEventSubscriptionPolicy>
@@ -73,6 +78,20 @@ void EventDispatcher<TEventSubscriptionPolicy>::subscribeEvent(
     std::cout << " subscribed to event " << eventID<TEvent>() << "\n";
     TEventSubscriptionPolicy::template subscribeEvent<TEvent>(
         eventID<TEvent>(), subscriber, handler);
+}
+
+template<typename TEventSubscriptionPolicy>
+template<typename TEvent>
+void EventDispatcher<TEventSubscriptionPolicy>::subscribeEvent(
+    EventProcessor& subscriber,
+    const typename Traits::event_handler_t<TEvent>& handler,
+    const typename Traits::event_filter_t<TEvent>& filter)
+{
+    checkSubscriberID(subscriber);
+    std::cout << "subscribeEvent() | subscriber " << subscriber.id();
+    std::cout << " subscribed to event " << eventID<TEvent>() << "\n";
+    TEventSubscriptionPolicy::template subscribeEvent<TEvent>(
+        eventID<TEvent>(), subscriber, handler, filter);
 }
 
 template<typename TEventSubscriptionPolicy>

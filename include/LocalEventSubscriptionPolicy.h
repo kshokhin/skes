@@ -18,6 +18,11 @@ public:
         const typename Traits::event_handler_t<TEvent>& handler);
 
     template<typename TEvent>
+    void subscribeEvent(size_t event_id, EventProcessor& subscriber,
+        const typename Traits::event_handler_t<TEvent>& handler,
+        const typename Traits::event_filter_t<TEvent>& filter);
+
+    template<typename TEvent>
     void unsubscribeEvent(size_t event_id, EventProcessor& subscriber);
 private:
     std::unordered_map<size_t, EventSubscribers> m_subscribers;
@@ -39,6 +44,16 @@ void LocalEventSubscriptionPolicy::subscribeEvent(
 { 
     m_subscribers[event_id].template subscribe<TEvent>(
             subscriber, handler);
+}
+
+template<typename TEvent>
+void LocalEventSubscriptionPolicy::subscribeEvent(
+    size_t event_id, EventProcessor& subscriber,
+    const typename Traits::event_handler_t<TEvent>& handler,
+    const typename Traits::event_filter_t<TEvent>& filter)
+{ 
+    m_subscribers[event_id].template subscribe<TEvent>(
+            subscriber, handler, filter);
 }
 
 template<typename TEvent>
